@@ -1,35 +1,72 @@
 package habitica
 
-import "errors"
-
-const (
-	baseURL = "https://habitica.com/api/v3"
+import (
+	"errors"
+	"fmt"
+	"net/http"
 )
 
-type HabitClient struct {
-	BaseURL string
+const (
+	baseURL   = "https://habitica.com/api/v3"
+	UserAgent = "go-habitica/1" // 1 is the version
+)
+
+type HabiticaClient struct {
+	userID    string
+	apiToken  string
+	BaseURL   string
+	UserAgent string
+	Client    *http.Client
+
+	Tasks *TaskService
 }
 
-type ClientOpt func(*HabitClient)
+type ClientOpt func(*HabiticaClient)
 
-func New(userID, apiToken string, opts ...ClientOpt) (*HabitClient, error) {
+func New(userID, apiToken string, opts ...ClientOpt) (*HabiticaClient, error) {
 	if len(userID) == 0 || len(apiToken) == 0 {
 		return nil, errors.New("needs valid user id and api token")
 	}
 
-	client := &HabitClient{
-		BaseURL: baseURL,
+	h := &HabiticaClient{
+		userID:    userID,
+		apiToken:  apiToken,
+		BaseURL:   baseURL,
+		UserAgent: UserAgent,
+		Client:    http.DefaultClient,
 	}
 
 	for _, o := range opts {
-		o(client)
+		o(h)
 	}
 
-	return client, nil
+	h.Tasks = newTaskService(h)
+
+	return h, nil
 }
 
-func WithBaseURL(url string) func(*HabitClient) {
-	return func(h *HabitClient) {
-		h.BaseURL = url
+func WithBaseURL(baseUrl string) func(*HabiticaClient) {
+	return func(h *HabiticaClient) {
+		h.BaseURL = baseUrl
 	}
+}
+
+func WithHttpClient(c *http.Client) func(*HabiticaClient) {
+	return func(h *HabiticaClient) {
+		h.Client = c
+	}
+}
+
+func (h *HabiticaClient) NewRequest(method, urlPath string) (*http.Request, error) {
+	u := fmt.Sprintf("%s/%s", h.BaseURL, urlPath)
+	// TODO: Handle err
+	req, _ := http.NewRequest(method, u, nil)
+	// TODO: Handle err
+
+	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-user", h.userID)
+	req.Header.Set("x-api-key", h.apiToken)
+
+	return req, nil
 }
