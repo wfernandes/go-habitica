@@ -42,6 +42,7 @@ var _ = Describe("Task Service", func() {
 				w.WriteHeader(http.StatusOK)
 				w.Write(taskResponse)
 			})
+			client.Tasks.Get(context.Background(), "some-task-id")
 			Expect(request.Method).To(Equal(http.MethodGet))
 			Expect(request.UserAgent()).To(Equal(habitica.UserAgent))
 			Expect(request.Header.Get("x-api-user")).To(Equal("userid"))
@@ -59,6 +60,8 @@ var _ = Describe("Task Service", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(task).ToNot(BeNil())
 			Expect(task.Success).To(BeTrue())
+			Expect(task.Data.Text).To(Equal("API Trial"))
+			Expect(task.Data.Id).To(Equal("2b774d70-ec8b-41c1-8967-eb6b13d962ba"))
 		})
 	})
 

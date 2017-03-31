@@ -1,6 +1,7 @@
 package habitica
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -58,15 +59,21 @@ func WithHttpClient(c *http.Client) func(*HabiticaClient) {
 }
 
 func (h *HabiticaClient) NewRequest(method, urlPath string) (*http.Request, error) {
-	u := fmt.Sprintf("%s/%s", h.BaseURL, urlPath)
-	// TODO: Handle err
-	req, _ := http.NewRequest(method, u, nil)
-	// TODO: Handle err
-
+	url := fmt.Sprintf("%s/%s", h.BaseURL, urlPath)
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("User-Agent", UserAgent)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-api-user", h.userID)
 	req.Header.Set("x-api-key", h.apiToken)
 
 	return req, nil
+}
+
+func (h *HabiticaClient) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
+
+	return h.Client.Do(req)
+
 }

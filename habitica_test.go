@@ -72,7 +72,6 @@ var _ = Describe("Habitica", func() {
 		It("returns a request with appropriate headers", func() {
 			c, err := habitica.New("user", "api")
 			Expect(err).ToNot(HaveOccurred())
-
 			urlPath := "tasks/group/some-group-id"
 			request, err := c.NewRequest(http.MethodGet, urlPath)
 			Expect(err).ToNot(HaveOccurred())
@@ -82,7 +81,13 @@ var _ = Describe("Habitica", func() {
 			Expect(request.Header.Get("x-api-user")).To(Equal("user"))
 			Expect(request.Header.Get("x-api-key")).To(Equal("api"))
 			Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
+		})
 
+		It("returns an error if unable to create request", func() {
+			c, err := habitica.New("user", "api")
+			Expect(err).ToNot(HaveOccurred())
+			_, err = c.NewRequest(" GOT", "")
+			Expect(err).To(HaveOccurred())
 		})
 	})
 
