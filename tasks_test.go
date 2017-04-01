@@ -72,31 +72,6 @@ var _ = Describe("Task Service", func() {
 					w.WriteHeader(http.StatusOK)
 					w.Write([]byte(`{some bad response}`))
 				})
-<<<<<<< HEAD
-
-				task, err := client.Tasks.Get(ctx, "some-task-id")
-				Expect(err).To(HaveOccurred())
-				Expect(task).To(BeNil())
-			})
-		})
-
-		Context("User Tasks", func() {
-			It("returns the tasks from the user in the header", func() {
-				mux.HandleFunc("/tasks/user", func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusOK)
-					w.Write(userTasksResponse)
-				})
-
-				resp, err := client.Tasks.List(ctx)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(resp).ToNot(BeNil())
-				Expect(resp.Data).To(HaveLen(1))
-				Expect(resp.Data[0].Text).To(Equal("Practice Task 31"))
-				Expect(resp.Data[0].UserID).To(Equal("b0413351-405f-416f-8787-947ec1c85199"))
-			})
-		})
-=======
->>>>>>> d66df3d... Adds endpoint for getting the user's tasks
 
 				task, err := client.Tasks.Get(ctx, "some-task-id")
 				Expect(err).To(HaveOccurred())
