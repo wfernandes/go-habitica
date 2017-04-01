@@ -63,6 +63,17 @@ var _ = Describe("Task Service", func() {
 			Expect(task.Data.Text).To(Equal("API Trial"))
 			Expect(task.Data.Id).To(Equal("2b774d70-ec8b-41c1-8967-eb6b13d962ba"))
 		})
+
+		It("returns an error if it cannot decode a respose", func() {
+			mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{some bad response}`))
+			})
+
+			task, err := client.Tasks.Get(context.Background(), "some-task-id")
+			Expect(err).To(HaveOccurred())
+			Expect(task).To(BeNil())
+		})
 	})
 
 })
