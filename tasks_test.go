@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 
 	"github.com/wfernandes/go-habitica"
 
-	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
@@ -18,85 +18,93 @@ var (
 	ctx    context.Context
 )
 
-var _ = Describe("Task Service", func() {
-	Context("endpoints", func() {
-		BeforeEach(func() {
-			var err error
-			mux = http.NewServeMux()
-			ts = httptest.NewServer(mux)
-			client, err = habitica.New(
-				"b0413351-405f-416f-8787-947ec1c85199",
-				"api",
-				habitica.WithBaseURL(ts.URL),
-			)
-			Expect(err).ToNot(HaveOccurred())
-			ctx = context.Background()
-		})
+func setup() {
+	var err error
+	mux = http.NewServeMux()
+	ts = httptest.NewServer(mux)
+	client, err = habitica.New(
+		"b0413351-405f-416f-8787-947ec1c85199",
+		"api",
+		habitica.WithBaseURL(ts.URL),
+	)
+	Expect(err).ToNot(HaveOccurred())
+	ctx = context.Background()
+}
 
-		AfterEach(func() {
-			ts.Close()
-		})
+func teardown() {
+	ts.Close()
+}
 
-		Context("Get", func() {
-			It("creates request with correct headers", func() {
-				request := &http.Request{}
-				mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
-					request = r
-					w.WriteHeader(http.StatusOK)
-					w.Write(taskResponse)
-				})
-				client.Tasks.Get(ctx, "some-task-id")
-				Expect(request.Method).To(Equal(http.MethodGet))
-				Expect(request.UserAgent()).To(Equal(habitica.UserAgent))
-				Expect(request.Header.Get("x-api-user")).To(Equal("b0413351-405f-416f-8787-947ec1c85199"))
-				Expect(request.Header.Get("x-api-key")).To(Equal("api"))
-				Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
-			})
+func TestGet_RequestHeaders(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
 
-			It("returns a task for get", func() {
-				mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusOK)
-					w.Write(taskResponse)
-				})
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
+	})
+	client.Tasks.Get(ctx, "some-task-id")
+	Expect(request.Method).To(Equal(http.MethodGet))
+	Expect(request.UserAgent()).To(Equal(habitica.UserAgent))
+	Expect(request.Header.Get("x-api-user")).To(Equal("b0413351-405f-416f-8787-947ec1c85199"))
+	Expect(request.Header.Get("x-api-key")).To(Equal("api"))
+	Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
+}
 
-				task, err := client.Tasks.Get(ctx, "some-task-id")
-				Expect(err).ToNot(HaveOccurred())
-				Expect(task).ToNot(BeNil())
-				Expect(task.Success).To(BeTrue())
-				Expect(task.Data.Text).To(Equal("API Trial"))
-				Expect(task.Data.ID).To(Equal("2b774d70-ec8b-41c1-8967-eb6b13d962ba"))
-			})
+func TestGet_ReturnsTaskResponse(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
 
-			It("returns an error if it cannot decode a respose", func() {
-				mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusOK)
-					w.Write([]byte(`{some bad response}`))
-				})
-
-				task, err := client.Tasks.Get(ctx, "some-task-id")
-				Expect(err).To(HaveOccurred())
-				Expect(task).To(BeNil())
-			})
-		})
-
-		Context("User Tasks", func() {
-			It("returns the tasks from the user in the header", func() {
-				mux.HandleFunc("/tasks/user", func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusOK)
-					w.Write(userTasksResponse)
-				})
-
-				resp, err := client.Tasks.List(ctx)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(resp).ToNot(BeNil())
-				Expect(resp.Data).To(HaveLen(1))
-				Expect(resp.Data[0].Text).To(Equal("Practice Task 31"))
-				Expect(resp.Data[0].UserID).To(Equal("b0413351-405f-416f-8787-947ec1c85199"))
-			})
-		})
+	mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
 	})
 
-})
+	task, err := client.Tasks.Get(ctx, "some-task-id")
+	Expect(err).ToNot(HaveOccurred())
+	Expect(task).ToNot(BeNil())
+	Expect(task.Success).To(BeTrue())
+	Expect(task.Data.Text).To(Equal("API Trial"))
+	Expect(task.Data.ID).To(Equal("2b774d70-ec8b-41c1-8967-eb6b13d962ba"))
+}
+
+func TestGet_ErrorWhenDecodingResponse(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{some bad response}`))
+	})
+
+	task, err := client.Tasks.Get(ctx, "some-task-id")
+	Expect(err).To(HaveOccurred())
+	Expect(task).To(BeNil())
+}
+
+func TestGet_UserTasks(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/tasks/user", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write(userTasksResponse)
+	})
+
+	resp, err := client.Tasks.List(ctx)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(resp).ToNot(BeNil())
+	Expect(resp.Data).To(HaveLen(1))
+	Expect(resp.Data[0].Text).To(Equal("Practice Task 31"))
+	Expect(resp.Data[0].UserID).To(Equal("b0413351-405f-416f-8787-947ec1c85199"))
+
+}
 
 var userTasksResponse = []byte(`
 {
