@@ -1,0 +1,10 @@
+language: go
+
+go:
+  - 1.7
+
+install:
+  - go get ./...
+  - go get github.com/onsi/gomega
+
+script: go test -v ./... -short
