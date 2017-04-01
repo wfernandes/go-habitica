@@ -1,3 +1,6 @@
+[![Build
+Status](https://travis-ci.org/wfernandes/go-habitica.svg?branch=master)](https://travis-ci.org/wfernandes/go-habitica)
+
 # go-habitica
 golang client for habitica, a free habit building productivity app
 
