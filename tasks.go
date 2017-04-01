@@ -8,13 +8,19 @@ import (
 )
 
 type Task struct {
-	Id   string `json:"id"`
-	Text string `json:"text"`
+	ID     string `json:"id"`
+	UserID string `json:"userId"`
+	Text   string `json:"text"`
 }
 
 type TaskResponse struct {
 	Success bool `json:"success"`
 	Data    Task `json:"data"`
+}
+
+type TasksResponse struct {
+	Success bool   `json:"success"`
+	Data    []Task `json:"data"`
 }
 
 type TaskService struct {
@@ -49,4 +55,26 @@ func (t *TaskService) Get(ctx context.Context, id string) (*TaskResponse, error)
 	}
 
 	return &taskResp, err
+}
+
+func (t *TaskService) List(ctx context.Context) (*TasksResponse, error) {
+	req, err := t.client.NewRequest(http.MethodGet, "tasks/user")
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+
+	resp, err := t.client.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to perform request: %s", err)
+	}
+	defer resp.Body.Close()
+
+	var tasksResp TasksResponse
+	err = json.NewDecoder(resp.Body).Decode(&tasksResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode response body: %s", err)
+	}
+
+	return &tasksResp, err
+	return nil, nil
 }
