@@ -8,9 +8,10 @@ import (
 )
 
 type Task struct {
-	ID     string `json:"id"`
-	UserID string `json:"userId"`
-	Text   string `json:"text"`
+	ID        string `json:"id"`
+	UserID    string `json:"userId"`
+	Text      string `json:"text"`
+	Completed bool   `json:"completed"`
 }
 
 type TaskResponse struct {
@@ -76,5 +77,17 @@ func (t *TaskService) List(ctx context.Context) (*TasksResponse, error) {
 	}
 
 	return &tasksResp, err
+}
+
+func (t *TaskService) Update(ctx context.Context, id string, task *Task) (*TaskResponse, error) {
+	req, err := t.client.NewRequest(http.MethodPut, fmt.Sprintf("tasks/%s", id))
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+	resp, err := t.client.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to perform request: %s", err)
+	}
+	defer resp.Body.Close()
 	return nil, nil
 }

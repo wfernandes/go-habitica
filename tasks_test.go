@@ -106,6 +106,24 @@ func TestGet_UserTasks(t *testing.T) {
 
 }
 
+func TestUpdate_Task(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+	})
+	_, err := client.Tasks.Update(ctx, "some-task-id", &habitica.Task{Completed: true})
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodPut))
+	Expect(request.UserAgent()).To(Equal(habitica.UserAgent))
+	Expect(request.Header.Get("x-api-user")).To(Equal("b0413351-405f-416f-8787-947ec1c85199"))
+	Expect(request.Header.Get("x-api-key")).To(Equal("api"))
+}
+
 var userTasksResponse = []byte(`
 {
 	"success": true,
