@@ -7,26 +7,25 @@ import (
 	"net/http"
 )
 
-const (
-	TaskNotFound = "task not found"
-)
-
 type Task struct {
 	ID        string `json:"id"`
 	UserID    string `json:"userId"`
 	Text      string `json:"text"`
+	Type      string `json:"type"`
 	Notes     string `json:"notes"`
 	Completed bool   `json:"completed"`
 }
 
 type TaskResponse struct {
-	Success bool `json:"success"`
-	Data    Task `json:"data"`
+	Success bool   `json:"success"`
+	Data    Task   `json:"data,omitempty"`
+	Error   string `json:"error,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 type TasksResponse struct {
 	Success bool   `json:"success"`
-	Data    []Task `json:"data"`
+	Data    []Task `json:"data,omitempty"`
 }
 
 type TaskService struct {
@@ -91,7 +90,14 @@ func (t *TaskService) Update(ctx context.Context, id string, task *Task) (*TaskR
 		return nil, fmt.Errorf("unable to perform request: %s", err)
 	}
 	defer resp.Body.Close()
-	return nil, nil
+
+	taskResp := &TaskResponse{}
+	err = json.NewDecoder(resp.Body).Decode(taskResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode response body: %s", err)
+	}
+
+	return taskResp, err
 }
 
 func (t *TaskService) Create(ctx context.Context, task *Task) (*TaskResponse, error) {

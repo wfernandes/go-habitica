@@ -116,6 +116,7 @@ func TestUpdate_Task(t *testing.T) {
 	mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
 		request = r
 		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
 	})
 	_, err := client.Tasks.Update(ctx, "some-task-id", &habitica.Task{Completed: true})
 	Expect(err).ToNot(HaveOccurred())
