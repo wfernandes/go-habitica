@@ -145,6 +145,23 @@ func TestCreate_Task(t *testing.T) {
 	Expect(receivedTask.Text).To(Equal("New Task"))
 }
 
+func TestDelete_Task(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/some-task-id", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
+	})
+	_, err := client.Tasks.Delete(ctx, "some-task-id")
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodDelete))
+
+}
+
 var userTasksResponse = []byte(`{
 	"success": true,
 	"data": [{
