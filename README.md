@@ -3,6 +3,7 @@ Status](https://travis-ci.org/wfernandes/go-habitica.svg?branch=master)](https:/
 
 # go-habitica
 golang client for habitica, a free habit building productivity app
+It is a client for the v3 API.
 
 ## NOTE
 This client is not ready yet. I'll do my best to flesh out most of the endpoints.
