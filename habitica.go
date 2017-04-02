@@ -1,9 +1,12 @@
 package habitica
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -58,9 +61,19 @@ func WithHttpClient(c *http.Client) func(*HabiticaClient) {
 	}
 }
 
-func (h *HabiticaClient) NewRequest(method, urlPath string) (*http.Request, error) {
+func (h *HabiticaClient) NewRequest(method, urlPath string, body interface{}) (*http.Request, error) {
 	url := fmt.Sprintf("%s/%s", h.BaseURL, urlPath)
-	req, err := http.NewRequest(method, url, nil)
+
+	var buf io.ReadWriter
+	if body != nil {
+		buf = new(bytes.Buffer)
+		err := json.NewEncoder(buf).Encode(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req, err := http.NewRequest(method, url, buf)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +86,5 @@ func (h *HabiticaClient) NewRequest(method, urlPath string) (*http.Request, erro
 }
 
 func (h *HabiticaClient) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
-
 	return h.Client.Do(req)
-
 }

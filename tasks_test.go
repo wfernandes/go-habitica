@@ -2,6 +2,7 @@ package habitica_test
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -124,8 +125,27 @@ func TestUpdate_Task(t *testing.T) {
 	Expect(request.Header.Get("x-api-key")).To(Equal("api"))
 }
 
-var userTasksResponse = []byte(`
-{
+func TestCreate_Task(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	actualTask := &habitica.Task{Text: "New Task"}
+	receivedTask := habitica.Task{}
+	mux.HandleFunc("/tasks/user", func(w http.ResponseWriter, r *http.Request) {
+		json.NewDecoder(r.Body).Decode(&receivedTask)
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
+	})
+	_, err := client.Tasks.Create(ctx, actualTask)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodPost))
+	Expect(receivedTask.Text).To(Equal("New Task"))
+}
+
+var userTasksResponse = []byte(`{
 	"success": true,
 	"data": [{
 		"_id": "84c2e874-a8c9-4673-bd31-d97a1a42e9a3",

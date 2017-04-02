@@ -1,6 +1,7 @@
 package habitica_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/wfernandes/go-habitica"
 
-	// . "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
@@ -84,7 +84,7 @@ func TestNewRequest_CorrectHeaders(t *testing.T) {
 	c, err := habitica.New("user", "api")
 	Expect(err).ToNot(HaveOccurred())
 	urlPath := "tasks/group/some-group-id"
-	request, err := c.NewRequest(http.MethodGet, urlPath)
+	request, err := c.NewRequest(http.MethodGet, urlPath, nil)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(request.Method).To(Equal(http.MethodGet))
 	Expect(request.UserAgent()).To(Equal(habitica.UserAgent))
@@ -94,10 +94,23 @@ func TestNewRequest_CorrectHeaders(t *testing.T) {
 	Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
 }
 
+func TestNewRequest_RequestBody(t *testing.T) {
+	RegisterTestingT(t)
+	c, err := habitica.New("user", "api")
+	Expect(err).ToNot(HaveOccurred())
+	urlPath := "tasks/user"
+	actualTask := &habitica.Task{Text: "Test task"}
+	req, err := c.NewRequest(http.MethodPost, urlPath, actualTask)
+	Expect(req.Method).To(Equal(http.MethodPost))
+	receivedTask := habitica.Task{}
+	json.NewDecoder(req.Body).Decode(&receivedTask)
+	Expect(receivedTask).To(Equal(*actualTask))
+}
+
 func TestNewRequest_ErrorForBadMethod(t *testing.T) {
 	RegisterTestingT(t)
 	c, err := habitica.New("user", "api")
 	Expect(err).ToNot(HaveOccurred())
-	_, err = c.NewRequest(" GOT", "")
+	_, err = c.NewRequest(" GOT", "", nil)
 	Expect(err).To(HaveOccurred())
 }
