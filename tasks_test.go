@@ -160,7 +160,26 @@ func TestDelete_Task(t *testing.T) {
 	_, err := client.Tasks.Delete(ctx, "some-task-id")
 	Expect(err).ToNot(HaveOccurred())
 	Expect(request.Method).To(Equal(http.MethodDelete))
+}
 
+func TestAddTagToTask(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/some-task-id/tags/some-tag-id", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
+	})
+	resp, err := client.Tasks.AddTag(ctx, "some-task-id", "some-tag-id")
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodPost))
+	Expect(resp.Data).ToNot(BeNil())
+	task := resp.Data
+	Expect(task.Tags).To(HaveLen(1))
+	Expect(task.Tags[0]).To(Equal("some-tag-id"))
 }
 
 var userTasksResponse = []byte(`{
@@ -219,12 +238,13 @@ var taskResponse = []byte(`
     "success": true,
     "data": {
         "_id": "2b774d70-ec8b-41c1-8967-eb6b13d962ba",
+        "id": "2b774d70-ec8b-41c1-8967-eb6b13d962ba",
         "userId": "b0413351-405f-416f-8787-947ec1c85199",
         "text": "API Trial",
         "alias": "apiTrial",
         "type": "habit",
         "notes": "",
-        "tags": [],
+        "tags": ["some-tag-id"],
         "value": 11.996661122825959,
         "priority": 1.5,
         "attribute": "str",
@@ -250,8 +270,7 @@ var taskResponse = []byte(`
             }
         ],
         "down": false,
-        "up": true,
-        "id": "2b774d70-ec8b-41c1-8967-eb6b13d962ba"
+        "up": true
     },
     "notifications": []
 }`)

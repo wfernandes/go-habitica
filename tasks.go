@@ -8,12 +8,13 @@ import (
 )
 
 type Task struct {
-	ID        string `json:"id"`
-	UserID    string `json:"userId"`
-	Text      string `json:"text"`
-	Type      string `json:"type"`
-	Notes     string `json:"notes"`
-	Completed bool   `json:"completed"`
+	ID        string   `json:"id"`
+	UserID    string   `json:"userId"`
+	Text      string   `json:"text"`
+	Type      string   `json:"type"`
+	Notes     string   `json:"notes"`
+	Tags      []string `json:"tags"`
+	Completed bool     `json:"completed"`
 }
 
 type TaskResponse struct {
@@ -131,6 +132,25 @@ func (t *TaskService) Delete(ctx context.Context, id string) (*TaskResponse, err
 	}
 	defer resp.Body.Close()
 
+	taskResp := &TaskResponse{}
+	err = json.NewDecoder(resp.Body).Decode(taskResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode response body: %s", err)
+	}
+
+	return taskResp, err
+}
+
+func (t *TaskService) AddTag(ctx context.Context, taskID, tagID string) (*TaskResponse, error) {
+	req, err := t.client.NewRequest(http.MethodPost, fmt.Sprintf("tasks/%s/tags/%s", taskID, tagID), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+	resp, err := t.client.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to perform request: %s", err)
+	}
+	defer resp.Body.Close()
 	taskResp := &TaskResponse{}
 	err = json.NewDecoder(resp.Body).Decode(taskResp)
 	if err != nil {
