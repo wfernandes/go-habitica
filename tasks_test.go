@@ -260,6 +260,34 @@ func TestDeleteCompletedTodos(t *testing.T) {
 	Expect(resp.Data).To(Equal(&habitica.Task{}))
 }
 
+func TestMoveTaskToPosition(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/some-task-id/move/to/0", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskReorderResponse)
+	})
+	resp, err := client.Tasks.MoveToPosition(ctx, "some-task-id", 0)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodPost))
+	Expect(resp.Data).To(HaveLen(3))
+}
+
+var taskReorderResponse = []byte(`
+{
+    "success": true,
+    "data": [
+        "8d7e237a-b259-46ee-b431-33621256bb0b",
+        "2b774d70-ec8b-41c1-8967-eb6b13d962ba",
+        "f03d4a2b-9c36-4f33-9b5f-bae0aed23a49"
+    ],
+    "notifications": []
+}`)
+
 var taskResponse = []byte(`
 {
     "success": true,

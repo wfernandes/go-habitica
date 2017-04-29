@@ -25,6 +25,11 @@ type TaskResponse struct {
 	Message string `json:"message,omitempty"`
 }
 
+type TaskReorderResponse struct {
+	Success bool     `json:"success"`
+	Data    []string `json:"data,omitempty"`
+}
+
 type TasksResponse struct {
 	Success bool   `json:"success"`
 	Data    []Task `json:"data,omitempty"`
@@ -241,4 +246,23 @@ func (t *TaskService) ClearCompletedTodos(ctx context.Context) (*TaskResponse, e
 	}
 
 	return taskResp, err
+}
+
+func (t *TaskService) MoveToPosition(ctx context.Context, taskID string, position int) (*TaskReorderResponse, error) {
+	req, err := t.client.NewRequest(http.MethodPost, fmt.Sprintf("tasks/%s/move/to/%d", taskID, position), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+	resp, err := t.client.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to perform request: %s", err)
+	}
+	defer resp.Body.Close()
+	taskReorderResp := &TaskReorderResponse{}
+	err = json.NewDecoder(resp.Body).Decode(taskReorderResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode response body: %s", err)
+	}
+
+	return taskReorderResp, err
 }
