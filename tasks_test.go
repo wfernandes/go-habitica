@@ -182,6 +182,23 @@ func TestAddTagToTask(t *testing.T) {
 	Expect(task.Tags[0]).To(Equal("some-tag-id"))
 }
 
+func TestDeleteTagFromTask(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/some-task-id/tags/some-tag-id", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
+	})
+	resp, err := client.Tasks.DeleteTag(ctx, "some-task-id", "some-tag-id")
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodDelete))
+	Expect(resp.Data).ToNot(BeNil())
+}
+
 func TestAddItemToTaskChecklist(t *testing.T) {
 	RegisterTestingT(t)
 	setup()

@@ -167,6 +167,25 @@ func (t *TaskService) AddTag(ctx context.Context, taskID, tagID string) (*TaskRe
 	return taskResp, err
 }
 
+func (t *TaskService) DeleteTag(ctx context.Context, taskID, tagID string) (*TaskResponse, error) {
+	req, err := t.client.NewRequest(http.MethodDelete, fmt.Sprintf("tasks/%s/tags/%s", taskID, tagID), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+	resp, err := t.client.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to perform request: %s", err)
+	}
+	defer resp.Body.Close()
+	taskResp := &TaskResponse{}
+	err = json.NewDecoder(resp.Body).Decode(taskResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode response body: %s", err)
+	}
+
+	return taskResp, err
+}
+
 func (t *TaskService) AddChecklistItem(ctx context.Context, taskID string, item *ChecklistItem) (*TaskResponse, error) {
 	req, err := t.client.NewRequest(http.MethodPost, fmt.Sprintf("tasks/%s/checklist", taskID), item)
 	if err != nil {
