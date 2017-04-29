@@ -205,6 +205,23 @@ func TestAddItemToTaskChecklist(t *testing.T) {
 	Expect(task.Checklist[0].Completed).To(BeFalse())
 }
 
+func TestDeleteChecklistItemFromTask(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/some-task-id/checklist/some-item-id", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
+	})
+	resp, err := client.Tasks.DeleteChecklistItem(ctx, "some-task-id", "some-item-id")
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodDelete))
+	Expect(resp.Data).ToNot(BeNil())
+}
+
 var taskResponse = []byte(`
 {
     "success": true,
