@@ -32,7 +32,7 @@ func TestIntegration_CRUDTask(t *testing.T) {
 	taskResponse, err = client.Tasks.Create(ctx, task)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(taskResponse.Success).To(BeTrue(), "create did not succeed")
-	task = &taskResponse.Data
+	task = taskResponse.Data
 	Expect(task.ID).ToNot(BeEmpty(), "task ID was empty")
 	Expect(task.UserID).To(Equal(userID))
 

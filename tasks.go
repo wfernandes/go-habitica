@@ -20,7 +20,7 @@ type Task struct {
 
 type TaskResponse struct {
 	Success bool   `json:"success"`
-	Data    Task   `json:"data,omitempty"`
+	Data    *Task  `json:"data,omitempty"`
 	Error   string `json:"error,omitempty"`
 	Message string `json:"message,omitempty"`
 }
@@ -207,6 +207,25 @@ func (t *TaskService) AddChecklistItem(ctx context.Context, taskID string, item 
 
 func (t *TaskService) DeleteChecklistItem(ctx context.Context, taskID, itemID string) (*TaskResponse, error) {
 	req, err := t.client.NewRequest(http.MethodDelete, fmt.Sprintf("tasks/%s/checklist/%s", taskID, itemID), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+	resp, err := t.client.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to perform request: %s", err)
+	}
+	defer resp.Body.Close()
+	taskResp := &TaskResponse{}
+	err = json.NewDecoder(resp.Body).Decode(taskResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode response body: %s", err)
+	}
+
+	return taskResp, err
+}
+
+func (t *TaskService) ClearCompletedTodos(ctx context.Context) (*TaskResponse, error) {
+	req, err := t.client.NewRequest(http.MethodPost, "tasks/clearcompletedtodos", nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}

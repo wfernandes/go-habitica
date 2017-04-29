@@ -239,6 +239,27 @@ func TestDeleteChecklistItemFromTask(t *testing.T) {
 	Expect(resp.Data).ToNot(BeNil())
 }
 
+func TestDeleteCompletedTodos(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/clearcompletedtodos", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{
+				"success": true,
+				"data": {},
+				"notifications": []
+			}`))
+	})
+	resp, err := client.Tasks.ClearCompletedTodos(ctx)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodPost))
+	Expect(resp.Data).To(Equal(&habitica.Task{}))
+}
+
 var taskResponse = []byte(`
 {
     "success": true,
