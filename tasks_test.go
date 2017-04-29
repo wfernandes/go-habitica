@@ -182,6 +182,78 @@ func TestAddTagToTask(t *testing.T) {
 	Expect(task.Tags[0]).To(Equal("some-tag-id"))
 }
 
+func TestAddItemToTaskChecklist(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tasks/some-task-id/checklist", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(taskResponse)
+	})
+	item := &habitica.ChecklistItem{Text: "Do this subtask"}
+	resp, err := client.Tasks.AddChecklistItem(ctx, "some-task-id", item)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodPost))
+	Expect(resp.Data).ToNot(BeNil())
+	task := resp.Data
+	Expect(task.Checklist).To(HaveLen(1))
+	Expect(task.Checklist[0].Id).ToNot(BeEmpty())
+	Expect(task.Checklist[0].Text).To(Equal("Do this subtask"))
+	Expect(task.Checklist[0].Completed).To(BeFalse())
+}
+
+var taskResponse = []byte(`
+{
+    "success": true,
+    "data": {
+        "_id": "2b774d70-ec8b-41c1-8967-eb6b13d962ba",
+        "id": "2b774d70-ec8b-41c1-8967-eb6b13d962ba",
+        "userId": "b0413351-405f-416f-8787-947ec1c85199",
+        "text": "API Trial",
+        "alias": "apiTrial",
+        "type": "habit",
+        "notes": "",
+        "tags": ["some-tag-id"],
+        "value": 11.996661122825959,
+        "priority": 1.5,
+        "attribute": "str",
+        "challenge": {
+            "taskId": "5f12bfba-da30-4733-ad01-9c42f9817975",
+            "id": "f23c12f2-5830-4f15-9c36-e17fd729a812"
+        },
+        "group": {
+            "assignedUsers": [],
+            "approval": {
+                "required": false,
+                "approved": false,
+                "requested": false
+            }
+        },
+        "reminders": [],
+        "createdAt": "2017-01-12T19:03:33.495Z",
+        "updatedAt": "2017-01-13T20:52:02.927Z",
+        "checklist": [
+            {
+                "id": "afe4079d-dff1-47d9-9b06-5d76c69ddb12",
+                "text": "Do this subtask",
+                "completed": false
+            }
+        ],
+        "history": [
+            {
+                "value": 1,
+                "date": 1484248053486
+            }
+        ],
+        "down": false,
+        "up": true
+    },
+    "notifications": []
+}`)
+
 var userTasksResponse = []byte(`{
 	"success": true,
 	"data": [{
@@ -231,46 +303,4 @@ var userTasksResponse = []byte(`{
 		"id": "84c2e874-a8c9-4673-bd31-d97a1a42e9a3"
 	}],
 	"notifications": []
-}`)
-
-var taskResponse = []byte(`
-{
-    "success": true,
-    "data": {
-        "_id": "2b774d70-ec8b-41c1-8967-eb6b13d962ba",
-        "id": "2b774d70-ec8b-41c1-8967-eb6b13d962ba",
-        "userId": "b0413351-405f-416f-8787-947ec1c85199",
-        "text": "API Trial",
-        "alias": "apiTrial",
-        "type": "habit",
-        "notes": "",
-        "tags": ["some-tag-id"],
-        "value": 11.996661122825959,
-        "priority": 1.5,
-        "attribute": "str",
-        "challenge": {
-            "taskId": "5f12bfba-da30-4733-ad01-9c42f9817975",
-            "id": "f23c12f2-5830-4f15-9c36-e17fd729a812"
-        },
-        "group": {
-            "assignedUsers": [],
-            "approval": {
-                "required": false,
-                "approved": false,
-                "requested": false
-            }
-        },
-        "reminders": [],
-        "createdAt": "2017-01-12T19:03:33.495Z",
-        "updatedAt": "2017-01-13T20:52:02.927Z",
-        "history": [
-            {
-                "value": 1,
-                "date": 1484248053486
-            }
-        ],
-        "down": false,
-        "up": true
-    },
-    "notifications": []
 }`)
