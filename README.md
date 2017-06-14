@@ -7,7 +7,9 @@ golang client for habitica, a free habit building productivity app.
 It is a client for the [v3 API](https://habitica.com/apidoc/).
 
 ## NOTE
-This client is not ready yet. I'll do my best to flesh out most of the endpoints.
+There is support for quite a few endpoints that I thought were the most
+beneficial. However, if there is an endpoint that isn't supported by the
+client feel free to create a Github issue or a pull request :)
 
 ## Tests
 ### Unit
