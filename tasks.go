@@ -51,12 +51,7 @@ func newTaskService(h *HabiticaClient) *TaskService {
 	}
 }
 
-func (t *TaskService) Get(ctx context.Context, id string) (*TaskResponse, error) {
-	req, err := t.client.NewRequest(http.MethodGet, fmt.Sprintf("tasks/%s", id), nil)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create request: %s", err)
-	}
-
+func (t *TaskService) getTaskResponse(ctx context.Context, req *http.Request) (*TaskResponse, error) {
 	resp, err := t.client.Do(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("unable to perform request: %s", err)
@@ -68,8 +63,16 @@ func (t *TaskService) Get(ctx context.Context, id string) (*TaskResponse, error)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode response body: %s", err)
 	}
-
 	return &taskResp, err
+}
+
+func (t *TaskService) Get(ctx context.Context, id string) (*TaskResponse, error) {
+	req, err := t.client.NewRequest(http.MethodGet, fmt.Sprintf("tasks/%s", id), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) List(ctx context.Context) (*TasksResponse, error) {
@@ -98,19 +101,8 @@ func (t *TaskService) Update(ctx context.Context, id string, task *Task) (*TaskR
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
 
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
-
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) Create(ctx context.Context, task *Task) (*TaskResponse, error) {
@@ -118,19 +110,8 @@ func (t *TaskService) Create(ctx context.Context, task *Task) (*TaskResponse, er
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
 
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
-
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) Delete(ctx context.Context, id string) (*TaskResponse, error) {
@@ -138,19 +119,8 @@ func (t *TaskService) Delete(ctx context.Context, id string) (*TaskResponse, err
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
 
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
-
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) AddTag(ctx context.Context, taskID, tagID string) (*TaskResponse, error) {
@@ -158,18 +128,8 @@ func (t *TaskService) AddTag(ctx context.Context, taskID, tagID string) (*TaskRe
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
 
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) DeleteTag(ctx context.Context, taskID, tagID string) (*TaskResponse, error) {
@@ -177,18 +137,8 @@ func (t *TaskService) DeleteTag(ctx context.Context, taskID, tagID string) (*Tas
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
 
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) AddChecklistItem(ctx context.Context, taskID string, item *ChecklistItem) (*TaskResponse, error) {
@@ -196,18 +146,8 @@ func (t *TaskService) AddChecklistItem(ctx context.Context, taskID string, item 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
 
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) UpdateChecklistItem(ctx context.Context, taskID string, item *ChecklistItem) (*TaskResponse, error) {
@@ -215,18 +155,8 @@ func (t *TaskService) UpdateChecklistItem(ctx context.Context, taskID string, it
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
 
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) DeleteChecklistItem(ctx context.Context, taskID, itemID string) (*TaskResponse, error) {
@@ -234,18 +164,8 @@ func (t *TaskService) DeleteChecklistItem(ctx context.Context, taskID, itemID st
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
 
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) ClearCompletedTodos(ctx context.Context) (*TaskResponse, error) {
@@ -253,18 +173,8 @@ func (t *TaskService) ClearCompletedTodos(ctx context.Context) (*TaskResponse, e
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
-	resp, err := t.client.Do(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("unable to perform request: %s", err)
-	}
-	defer resp.Body.Close()
-	taskResp := &TaskResponse{}
-	err = json.NewDecoder(resp.Body).Decode(taskResp)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode response body: %s", err)
-	}
 
-	return taskResp, err
+	return t.getTaskResponse(ctx, req)
 }
 
 func (t *TaskService) MoveToPosition(ctx context.Context, taskID string, position int) (*TaskReorderResponse, error) {
