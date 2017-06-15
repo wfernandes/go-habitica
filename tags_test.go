@@ -113,6 +113,26 @@ func TestPost_ReorderTags(t *testing.T) {
 	Expect(receivedReorderTag.TagID).To(Equal("c6855fae-ca15-48af-a88b-86d0c65ead47"))
 }
 
+func TestUpdate_Tag(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	updateTag := &habitica.Tag{Name: "Update Tag"}
+	receivedTag := habitica.Tag{}
+	mux.HandleFunc("/tags/some-tag-id", func(w http.ResponseWriter, r *http.Request) {
+		json.NewDecoder(r.Body).Decode(&receivedTag)
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(tagResponse)
+	})
+	_, err := client.Tags.Update(ctx, "some-tag-id", updateTag)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodPut))
+	Expect(receivedTag.Name).To(Equal("Update Tag"))
+}
+
 var tagResponse = []byte(`
 {
     "success": true,

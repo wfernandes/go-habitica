@@ -93,6 +93,15 @@ func (s *TagService) Reorder(ctx context.Context, t *ReorderTag) (*TagResponse, 
 	return s.getTagResponse(ctx, req)
 }
 
+func (s *TagService) Update(ctx context.Context, id string, t *Tag) (*TagResponse, error) {
+	req, err := s.client.NewRequest(http.MethodPut, fmt.Sprintf("tags/%s", id), t)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+
+	return s.getTagResponse(ctx, req)
+}
+
 func (s *TagService) getTagResponse(ctx context.Context, req *http.Request) (*TagResponse, error) {
 	resp, err := s.client.Do(ctx, req)
 	if err != nil {
