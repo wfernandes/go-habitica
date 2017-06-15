@@ -89,7 +89,7 @@ func TestGet_UserTags(t *testing.T) {
 	Expect(tags).To(HaveLen(3))
 }
 
-func TestPost_ReorderTags(t *testing.T) {
+func TestReorder_Tags(t *testing.T) {
 	RegisterTestingT(t)
 	setup()
 	defer teardown()
