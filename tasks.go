@@ -35,14 +35,14 @@ type TasksResponse struct {
 	Data    []Task `json:"data,omitempty"`
 }
 
-type TaskService struct {
-	client *HabiticaClient
-}
-
 type ChecklistItem struct {
 	Id        string ` json:"id"`
 	Text      string `json:"text"`
 	Completed bool   `json:"completed"`
+}
+
+type TaskService struct {
+	client *HabiticaClient
 }
 
 func newTaskService(h *HabiticaClient) *TaskService {

@@ -23,6 +23,7 @@ type HabiticaClient struct {
 	Client    *http.Client
 
 	Tasks *TaskService
+	Tags  *TagService
 }
 
 type ClientOpt func(*HabiticaClient)
@@ -45,6 +46,7 @@ func New(userID, apiToken string, opts ...ClientOpt) (*HabiticaClient, error) {
 	}
 
 	h.Tasks = newTaskService(h)
+	h.Tags = newTagService(h)
 
 	return h, nil
 }
