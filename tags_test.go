@@ -21,7 +21,7 @@ func TestCreate_Tag(t *testing.T) {
 		json.NewDecoder(r.Body).Decode(&receivedTag)
 		request = r
 		w.WriteHeader(http.StatusOK)
-		w.Write(tagsResponse)
+		w.Write(tagResponse)
 	})
 	_, err := client.Tags.Create(ctx, actualTag)
 	Expect(err).ToNot(HaveOccurred())
@@ -38,7 +38,7 @@ func TestDelete_Tag(t *testing.T) {
 	mux.HandleFunc("/tags/some-tag-id", func(w http.ResponseWriter, r *http.Request) {
 		request = r
 		w.WriteHeader(http.StatusOK)
-		w.Write(tagsResponse)
+		w.Write(tagResponse)
 	})
 	_, err := client.Tags.Delete(ctx, "some-tag-id")
 	Expect(err).ToNot(HaveOccurred())
@@ -54,7 +54,7 @@ func TestGet_Tag(t *testing.T) {
 	mux.HandleFunc("/tags/some-tag-id", func(w http.ResponseWriter, r *http.Request) {
 		request = r
 		w.WriteHeader(http.StatusOK)
-		w.Write(tagsResponse)
+		w.Write(tagResponse)
 	})
 	resp, err := client.Tags.Get(ctx, "some-tag-id")
 	Expect(err).ToNot(HaveOccurred())
@@ -69,7 +69,27 @@ func TestGet_Tag(t *testing.T) {
 	Expect(resp.Data.ID).ToNot(BeEmpty())
 }
 
-var tagsResponse = []byte(`
+func TestGet_UserTags(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tags", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(userTagsResponse)
+	})
+	resp, err := client.Tags.List(ctx)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodGet))
+
+	Expect(resp.Data).ToNot(BeNil())
+	tags := resp.Data
+	Expect(tags).To(HaveLen(3))
+}
+
+var tagResponse = []byte(`
 {
     "success": true,
     "data": {
@@ -78,3 +98,25 @@ var tagsResponse = []byte(`
     },
     "notifications": []
 }`)
+
+var userTagsResponse = []byte(`
+{
+    "success": true,
+    "data": [
+        {
+            "name": "Work",
+            "id": "3d5d324d-a042-4d5f-872e-0553e228553e"
+        },
+        {
+            "name": "apitester",
+            "challenge": "true",
+            "id": "f23c12f2-5830-4f15-9c36-e17fd729a812"
+        },
+        {
+            "name": "practicetag",
+            "id": "8bc0afbf-ab8e-49a4-982d-67a40557ed1a"
+        }
+    ],
+    "notifications": []
+}
+`)

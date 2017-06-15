@@ -17,6 +17,11 @@ type TagResponse struct {
 	Data    *Tag `json:"data,omitempty"`
 }
 
+type TagsResponse struct {
+	Success bool  `json:"success"`
+	Data    []Tag `json:"data,omitempty"`
+}
+
 type TagService struct {
 	client *HabiticaClient
 }
@@ -52,6 +57,26 @@ func (s *TagService) Get(ctx context.Context, id string) (*TagResponse, error) {
 	}
 
 	return s.getTagResponse(ctx, req)
+}
+
+func (s *TagService) List(ctx context.Context) (*TagsResponse, error) {
+	req, err := s.client.NewRequest(http.MethodGet, "tags", nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+
+	resp, err := s.client.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to perform request: %s", err)
+	}
+	defer resp.Body.Close()
+
+	var tagsResp TagsResponse
+	err = json.NewDecoder(resp.Body).Decode(&tagsResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode response body: %s", err)
+	}
+	return &tagsResp, err
 }
 
 func (s *TagService) getTagResponse(ctx context.Context, req *http.Request) (*TagResponse, error) {
