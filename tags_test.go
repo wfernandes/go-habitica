@@ -29,6 +29,22 @@ func TestCreate_Tag(t *testing.T) {
 	Expect(receivedTag.Name).To(Equal("New Tag"))
 }
 
+func TestDelete_Tag(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tags/some-tag-id", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(tagsResponse)
+	})
+	_, err := client.Tags.Delete(ctx, "some-tag-id")
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodDelete))
+}
+
 var tagsResponse = []byte(`
 {
     "success": true,

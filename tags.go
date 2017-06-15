@@ -36,6 +36,15 @@ func (s *TagService) Create(ctx context.Context, tag *Tag) (*TagResponse, error)
 	return s.getTagResponse(ctx, req)
 }
 
+func (s *TagService) Delete(ctx context.Context, id string) (*TagResponse, error) {
+	req, err := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("tags/%s", id), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+
+	return s.getTagResponse(ctx, req)
+}
+
 func (s *TagService) getTagResponse(ctx context.Context, req *http.Request) (*TagResponse, error) {
 	resp, err := s.client.Do(ctx, req)
 	if err != nil {
