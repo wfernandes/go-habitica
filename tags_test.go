@@ -45,6 +45,30 @@ func TestDelete_Tag(t *testing.T) {
 	Expect(request.Method).To(Equal(http.MethodDelete))
 }
 
+func TestGet_Tag(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	mux.HandleFunc("/tags/some-tag-id", func(w http.ResponseWriter, r *http.Request) {
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(tagsResponse)
+	})
+	resp, err := client.Tags.Get(ctx, "some-tag-id")
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodGet))
+	Expect(request.UserAgent()).To(Equal(habitica.UserAgent))
+	Expect(request.Header.Get("x-api-user")).To(Equal("b0413351-405f-416f-8787-947ec1c85199"))
+	Expect(request.Header.Get("x-api-key")).To(Equal("api"))
+	Expect(request.Header.Get("Content-Type")).To(Equal("application/json"))
+
+	Expect(resp.Data).ToNot(BeNil())
+	Expect(resp.Data.Name).To(Equal("practicetag"))
+	Expect(resp.Data.ID).ToNot(BeEmpty())
+}
+
 var tagsResponse = []byte(`
 {
     "success": true,
