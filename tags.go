@@ -12,6 +12,11 @@ type Tag struct {
 	Name string `json: name`
 }
 
+type ReorderTag struct {
+	TagID string `json: tagId`
+	To    int    `json: to`
+}
+
 type TagResponse struct {
 	Success bool `json:"success"`
 	Data    *Tag `json:"data,omitempty"`
@@ -77,6 +82,15 @@ func (s *TagService) List(ctx context.Context) (*TagsResponse, error) {
 		return nil, fmt.Errorf("unable to decode response body: %s", err)
 	}
 	return &tagsResp, err
+}
+
+func (s *TagService) Reorder(ctx context.Context, t *ReorderTag) (*TagResponse, error) {
+	req, err := s.client.NewRequest(http.MethodPost, "reorder-tags", t)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %s", err)
+	}
+
+	return s.getTagResponse(ctx, req)
 }
 
 func (s *TagService) getTagResponse(ctx context.Context, req *http.Request) (*TagResponse, error) {

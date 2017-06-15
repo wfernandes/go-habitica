@@ -89,6 +89,30 @@ func TestGet_UserTags(t *testing.T) {
 	Expect(tags).To(HaveLen(3))
 }
 
+func TestPost_ReorderTags(t *testing.T) {
+	RegisterTestingT(t)
+	setup()
+	defer teardown()
+
+	request := &http.Request{}
+	receivedReorderTag := habitica.ReorderTag{}
+	mux.HandleFunc("/reorder-tags", func(w http.ResponseWriter, r *http.Request) {
+		json.NewDecoder(r.Body).Decode(&receivedReorderTag)
+		request = r
+		w.WriteHeader(http.StatusOK)
+		w.Write(reorderTagResponse)
+	})
+
+	reorderTag := &habitica.ReorderTag{
+		TagID: "c6855fae-ca15-48af-a88b-86d0c65ead47",
+		To:    4,
+	}
+	_, err := client.Tags.Reorder(ctx, reorderTag)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(request.Method).To(Equal(http.MethodPost))
+	Expect(receivedReorderTag.TagID).To(Equal("c6855fae-ca15-48af-a88b-86d0c65ead47"))
+}
+
 var tagResponse = []byte(`
 {
     "success": true,
@@ -118,5 +142,10 @@ var userTagsResponse = []byte(`
         }
     ],
     "notifications": []
-}
-`)
+} `)
+
+var reorderTagResponse = []byte(`
+{
+    "tagId": "c6855fae-ca15-48af-a88b-86d0c65ead47",
+    "to": 4
+}`)
