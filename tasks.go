@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
+	"time"
 )
 
 type Task struct {
@@ -16,6 +19,29 @@ type Task struct {
 	Tags      []string        `json:"tags"`
 	Completed bool            `json:"completed"`
 	Checklist []ChecklistItem `json:"checklist"`
+	NextDue   []NextDueType   `json:"nextDue"`
+	IsDue     bool            `json:"isDue"`
+}
+
+type NextDueType time.Time
+
+func (n *NextDueType) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), "\"")
+	//the habitica api returns one of two date formats randomly
+	t, err := time.Parse("2006-01-02T15:04:05.000Z", s)
+	if err != nil {
+		t, err = time.Parse("Mon Jan 02 2006 15:04:05 MST-0700", s)
+	}
+	if err != nil {
+		return err
+	}
+	*n = NextDueType(t)
+	return nil
+}
+
+func (n NextDueType) Format(s string) string {
+	t := time.Time(n)
+	return t.Format(s)
 }
 
 type TaskResponse struct {
@@ -75,8 +101,8 @@ func (t *TaskService) Get(ctx context.Context, id string) (*TaskResponse, error)
 	return t.getTaskResponse(ctx, req)
 }
 
-func (t *TaskService) List(ctx context.Context) (*TasksResponse, error) {
-	req, err := t.client.NewRequest(http.MethodGet, "tasks/user", nil)
+func (t *TaskService) List(ctx context.Context, vals url.Values) (*TasksResponse, error) {
+	req, err := t.client.NewRequest(http.MethodGet, fmt.Sprintf("tasks/user?%s", vals.Encode()), nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %s", err)
 	}
