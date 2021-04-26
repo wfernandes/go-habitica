@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/wfernandes/go-habitica"
@@ -98,7 +99,8 @@ func TestGet_UserTasks(t *testing.T) {
 		w.Write(userTasksResponse)
 	})
 
-	resp, err := client.Tasks.List(ctx)
+	v := url.Values{}
+	resp, err := client.Tasks.List(ctx, v)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(resp).ToNot(BeNil())
 	Expect(resp.Data).To(HaveLen(1))

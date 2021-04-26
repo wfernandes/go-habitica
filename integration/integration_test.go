@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"context"
+	"net/url"
 	"os"
 	"testing"
 
@@ -73,7 +74,8 @@ func TestIntegration_UsersTasks(t *testing.T) {
 	if err != nil {
 		t.Errorf("error creating client: %s", err)
 	}
-	tasks, err := client.Tasks.List(context.Background())
+	v := url.Values{}
+	tasks, err := client.Tasks.List(context.Background(), v)
 	if err != nil {
 		t.Errorf("error retrieving list of tasks: %s", err)
 	}
